@@ -358,7 +358,7 @@
         </div>
 
         <div style="border-top: 1px solid #334155; padding-top: 8px;">
-          <input type="number" id="amt-${index}" placeholder="Custom Amount / Base Cost ($)" style="margin-bottom:6px;">
+          <input type="number" id="amt-${index}" placeholder="Custom Amount / Building Cost ($)" style="margin-bottom:6px;">
           <input type="text" id="propName-${index}" placeholder="Property Name (for purchase)" style="margin-bottom:6px;">
           
           <div class="action-grid">
@@ -481,21 +481,28 @@
   }
 
   function buyBuilding(index, type) {
+    const amtInput = document.getElementById(`amt-${index}`);
+    const cost = parseFloat(amtInput.value) || 0; // Uses entered cost (e.g. $50, $100, $150, $200) or $0 if blank
+
     if (type === 'house') {
       if (houses <= 0) return alert("No houses remaining in Bank!");
       saveState();
       houses--;
+      players[index].balance -= cost;
       document.getElementById("houses").textContent = houses;
-      logAction(`${players[index].name} bought a house. Houses left: ${houses}`);
+      logAction(`${players[index].name} bought a house for $${cost}. Houses left: ${houses}`);
     } else if (type === 'hotel') {
       if (hotels <= 0) return alert("No hotels remaining in Bank!");
       saveState();
       hotels--;
       houses += 4;
+      players[index].balance -= cost;
       document.getElementById("houses").textContent = houses;
       document.getElementById("hotels").textContent = hotels;
-      logAction(`${players[index].name} bought a hotel (+4 houses returned to Bank). Hotels left: ${hotels}`);
+      logAction(`${players[index].name} bought a hotel for $${cost} (+4 houses returned to Bank). Hotels left: ${hotels}`);
     }
+
+    renderPlayers();
   }
 </script>
 
