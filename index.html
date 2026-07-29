@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monopoly Master Banker Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .dashboard {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #38bdf8;
+    }
+
+    /* Top Horizontal Bar */
+    .top-bar {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 15px;
+      border-radius: 10px;
+      flex: 1;
+      min-width: 250px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+    }
+
+    .timer-display {
+      font-size: 1.4em;
+      font-weight: bold;
+      font-family: monospace;
+      color: #38bdf8;
+    }
+
+    .vault-display {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    /* Horizontal Layout Grid */
+    .main-content {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    /* Left Sidebar: Setup & Log */
+    .sidebar {
+      width: 320px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Right Main Area: Player Grid */
+    .player-grid {
+      flex-grow: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* Player Card Styling */
+    .player-card {
+      background: #1e293b;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .player-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+
+    .player-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #f8fafc;
+    }
+
+    .player-balance {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #4ade80;
+    }
+
+    .player-props {
+      font-size: 0.85em;
+      color: #94a3b8;
+      min-height: 40px;
+    }
+
+    .prop-tag {
+      display: inline-block;
+      background: #334155;
+      color: #f8fafc;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin: 2px;
+      font-weight: bold;
+    }
+
+    /* Input & Button Styles */
+    .flex-gap {
+      display: flex;
+      gap: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 0.9em;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: white;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 8px 10px;
+      font-size: 0.8em;
+      font-weight: bold;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-green  { background-color: #16a34a; }
+    .btn-blue   { background-color: #2563eb; }
+    .btn-red    { background-color: #dc2626; }
+    .btn-orange { background-color: #ea580c; }
+    .btn-purple { background-color: #9333ea; }
+    .btn-slate  { background-color: #475569; }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .history {
+      max-height: 250px;
+      overflow-y: auto;
+      font-size: 0.8em;
+      color: #94a3b8;
+    }
+
+    .history p {
+      margin: 4px 0;
+      border-bottom: 1px dashed #334155;
+      padding-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+  <h1>🏦 Monopoly Master Banker</h1>
+
+  <div class="top-bar">
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-size: 0.8em; color: #94a3b8;">GAME TIMER</div>
+        <div id="timer" class="timer-display">00:00:00</div>
+      </div>
+      <div class="flex-gap">
+        <button class="btn-green" id="startTimerBtn" onclick="toggleTimer()">Start</button>
+        <button class="btn-slate" onclick="resetTimer()">Reset</button>
+      </div>
+    </div>
+
+    <div class="card" style="border-color: #f59e0b; background: #1e1b18; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-size: 0.8em; color: #f59e0b;">FREE PARKING JACKPOT</div>
+        <div style="font-size: 1.4em; color: #fbbf24; font-weight: bold;" id="parkingPot">$0</div>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex; justify-content:space-around; align-items:center;">
+      <div class="vault-display">🏠 Houses: <span id="houses" style="color:#38bdf8">32</span></div>
+      <div class="vault-display">🏨 Hotels: <span id="hotels" style="color:#c084fc">12</span></div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    
+    <div class="sidebar">
+      <div class="card">
+        <h3 style="margin-top:0; font-size:1em;">Add Player</h3>
+        <div class="flex-gap">
+          <input type="text" id="newPlayerName" placeholder="Player Name">
+          <button class="btn-green" onclick="addPlayer()">Add</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0; font-size:1em;">Banker Activity Log</h3>
+        <div class="history" id="log">
+          <p><i>Banker tools online.</i></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-grid" id="playerGrid">
+      <div class="card" style="grid-column: 1 / -1; text-align:center; color:#64748b;">
+        <i>No players added yet. Add players from the sidebar on the left.</i>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let players = [];
+  let houses = 32;
+  let hotels = 12;
+  let freeParkingPot = 0;
+
+  // Timer Variables
+  let timerInterval = null;
+  let secondsElapsed = 0;
+
+  function toggleTimer() {
+    const btn = document.getElementById("startTimerBtn");
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      btn.textContent = "Start";
+      btn.className = "btn-green";
+    } else {
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        updateTimerDisplay();
+      }, 1000);
+      btn.textContent = "Pause";
+      btn.className = "btn-orange";
+    }
+  }
+
+  function resetTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    secondsElapsed = 0;
+    updateTimerDisplay();
+    document.getElementById("startTimerBtn").textContent = "Start";
+    document.getElementById("startTimerBtn").className = "btn-green";
+  }
+
+  function updateTimerDisplay() {
+    const hrs = String(Math.floor(secondsElapsed / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((secondsElapsed % 3600) / 60)).padStart(2, '0');
+    const secs = String(secondsElapsed % 60).padStart(2, '0');
+    document.getElementById("timer").textContent = `${hrs}:${mins}:${secs}`;
+  }
+
+  function logAction(msg) {
+    const log = document.getElementById("log");
+    const entry = document.createElement("p");
+    entry.textContent = `• ${msg}`;
+    log.prepend(entry);
+  }
+
+  function renderPlayers() {
+    const grid = document.getElementById("playerGrid");
+    grid.innerHTML = "";
+
+    if (players.length === 0) {
+      grid.innerHTML = `
+        <div class="card" style="grid-column: 1 / -1; text-align:center; color:#64748b;">
+          <i>No players added yet. Add players from the sidebar on the left.</i>
+        </div>`;
+      return;
+    }
+
+    players.forEach((p, index) => {
+      const card = document.createElement("div");
+      card.className = "player-card";
+
+      let propsHTML = p.properties.length > 0 
+        ? p.properties.map(pr => `<span class="prop-tag">${pr}</span>`).join(" ") 
+        : "<i>None</i>";
+
+      card.innerHTML = `
+        <div class="player-header">
+          <span class="player-name">${p.name}</span>
+          <span class="player-balance">$${p.balance}</span>
+        </div>
+        
+        <div class="player-props">
+          <strong>Owned Properties:</strong><br>${propsHTML}
+        </div>
+
+        <div style="border-top: 1px solid #334155; padding-top: 8px;">
+          <input type="number" id="amt-${index}" placeholder="Amount / Base Cost ($)" style="margin-bottom:6px;">
+          <input type="text" id="propName-${index}" placeholder="Property Name (for purchase)" style="margin-bottom:6px;">
+          
+          <div class="action-grid">
+            <button class="btn-green" onclick="payGo(${index})">Pass GO (+$200)</button>
+            <button class="btn-red" onclick="chargeBank(${index}, false)">Pay Bank</button>
+            <button class="btn-orange" onclick="chargeBank(${index}, true)">Pay Parking Tax</button>
+            <button class="btn-orange" onclick="claimFreeParking(${index})">Claim Jackpot</button>
+            <button class="btn-blue" onclick="buyProperty(${index})">Buy Property</button>
+            <button class="btn-blue" onclick="unmortgage(${index})">Unmortgage (+10%)</button>
+            <button class="btn-slate" onclick="buyBuilding(${index}, 'house')">Buy House (-1)</button>
+            <button class="btn-purple" onclick="buyBuilding(${index}, 'hotel')">Buy Hotel (-1)</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function addPlayer() {
+    const input = document.getElementById("newPlayerName");
+    const name = input.value.trim();
+    if (!name) return alert("Enter a valid player name!");
+
+    players.push({ name: name, balance: 1500, properties: [] });
+    input.value = "";
+    logAction(`Added player "${name}" with starting balance of $1,500.`);
+    renderPlayers();
+  }
+
+  function payGo(index) {
+    players[index].balance += 200;
+    logAction(`Bank paid $200 GO salary to ${players[index].name}.`);
+    renderPlayers();
+  }
+
+  function chargeBank(index, toFreeParking) {
+    const amtInput = document.getElementById(`amt-${index}`);
+    const val = parseFloat(amtInput.value);
+
+    if (!val || val <= 0) return alert("Please enter a valid dollar amount!");
+
+    players[index].balance -= val;
+
+    if (toFreeParking) {
+      freeParkingPot += val;
+      document.getElementById("parkingPot").textContent = `$${freeParkingPot}`;
+      logAction(`${players[index].name} paid $${val} tax to Free Parking.`);
+    } else {
+      logAction(`${players[index].name} paid $${val} to the Bank.`);
+    }
+
+    renderPlayers();
+  }
+
+  function claimFreeParking(index) {
+    if (freeParkingPot === 0) return alert("Free Parking Jackpot is empty!");
+
+    players[index].balance += freeParkingPot;
+    logAction(`${players[index].name} claimed the Free Parking Jackpot of $${freeParkingPot}!`);
+    freeParkingPot = 0;
+    document.getElementById("parkingPot").textContent = "$0";
+    renderPlayers();
+  }
+
+  function buyProperty(index) {
+    const propInput = document.getElementById(`propName-${index}`);
+    const costInput = document.getElementById(`amt-${index}`);
+
+    const propName = propInput.value.trim();
+    const cost = parseFloat(costInput.value);
+
+    if (!propName || !cost || cost <= 0) return alert("Enter property name and cost!");
+
+    players[index].balance -= cost;
+    players[index].properties.push(propName);
+
+    logAction(`${players[index].name} bought ${propName} for $${cost}.`);
+    renderPlayers();
+  }
+
+  function unmortgage(index) {
+    const amtInput = document.getElementById(`amt-${index}`);
+    const basePrice = parseFloat(amtInput.value);
+
+    if (!basePrice || basePrice <= 0) return alert("Enter property's base standard cost!");
+
+    const mortgageValue = basePrice / 2;
+    const fee = mortgageValue * 0.10;
+    const totalToPay = mortgageValue + fee;
+
+    players[index].balance -= totalToPay;
+    logAction(`${players[index].name} unmortgaged property ($${basePrice} base): Paid $${totalToPay} ($${mortgageValue} + $${fee} fee).`);
+    renderPlayers();
+  }
+
+  function buyBuilding(index, type) {
+    if (type === 'house') {
+      if (houses <= 0) return alert("No houses remaining in Bank!");
+      houses--;
+      document.getElementById("houses").textContent = houses;
+      logAction(`${players[index].name} bought a house. Houses left: ${houses}`);
+    } else if (type === 'hotel') {
+      if (hotels <= 0) return alert("No hotels remaining in Bank!");
+      hotels--;
+      houses += 4;
+      document.getElementById("houses").textContent = houses;
+      document.getElementById("hotels").textContent = hotels;
+      logAction(`${players[index].name} bought a hotel (+4 houses returned to Bank). Hotels left: ${hotels}`);
+    }
+  }
+</script>
+
+</body>
+</html>
