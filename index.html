@@ -132,7 +132,7 @@
       gap: 6px;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 8px;
       font-size: 0.9em;
@@ -252,7 +252,39 @@
   let houses = 32;
   let hotels = 12;
   let freeParkingPot = 0;
-  let historyStack = []; // Stores states for Undo
+  let historyStack = [];
+
+  // Full Standard Board Property List with Prices
+  const boardProperties = [
+    { name: "Mediterranean Avenue", cost: 60 },
+    { name: "Baltic Avenue", cost: 60 },
+    { name: "Reading Railroad", cost: 200 },
+    { name: "Oriental Avenue", cost: 100 },
+    { name: "Vermont Avenue", cost: 100 },
+    { name: "Connecticut Avenue", cost: 120 },
+    { name: "St. Charles Place", cost: 140 },
+    { name: "Electric Company", cost: 150 },
+    { name: "States Avenue", cost: 140 },
+    { name: "Virginia Avenue", cost: 160 },
+    { name: "Pennsylvania Railroad", cost: 200 },
+    { name: "St. James Place", cost: 180 },
+    { name: "Tennessee Avenue", cost: 180 },
+    { name: "New York Avenue", cost: 200 },
+    { name: "Kentucky Avenue", cost: 220 },
+    { name: "Indiana Avenue", cost: 220 },
+    { name: "Illinois Avenue", cost: 240 },
+    { name: "B. & O. Railroad", cost: 200 },
+    { name: "Atlantic Avenue", cost: 260 },
+    { name: "Ventnor Avenue", cost: 260 },
+    { name: "Water Works", cost: 150 },
+    { name: "Marvin Gardens", cost: 280 },
+    { name: "Pacific Avenue", cost: 300 },
+    { name: "North Carolina Avenue", cost: 300 },
+    { name: "Pennsylvania Avenue", cost: 320 },
+    { name: "Short Line Railroad", cost: 200 },
+    { name: "Park Place", cost: 350 },
+    { name: "Boardwalk", cost: 400 }
+  ];
 
   // Timer Variables
   let timerInterval = null;
@@ -291,7 +323,6 @@
     document.getElementById("timer").textContent = `${hrs}:${mins}:${secs}`;
   }
 
-  // Save state before performing an action
   function saveState() {
     historyStack.push({
       players: JSON.parse(JSON.stringify(players)),
@@ -347,6 +378,12 @@
         ? p.properties.map(pr => `<span class="prop-tag">${pr}</span>`).join(" ") 
         : "<i>None</i>";
 
+      // Generate property dropdown options
+      let propOptions = `<option value="">-- Choose Board Property --</option>`;
+      boardProperties.forEach((prop, pIdx) => {
+        propOptions += `<option value="${pIdx}">${prop.name} ($${prop.cost})</option>`;
+      });
+
       card.innerHTML = `
         <div class="player-header">
           <span class="player-name">${p.name}</span>
@@ -358,8 +395,11 @@
         </div>
 
         <div style="border-top: 1px solid #334155; padding-top: 8px;">
-          <input type="number" id="amt-${index}" placeholder="Custom Amount / Building Cost ($)" style="margin-bottom:6px;">
-          <input type="text" id="propName-${index}" placeholder="Property Name (for purchase)" style="margin-bottom:6px;">
+          <select id="propSelect-${index}" onchange="selectProperty(${index})" style="margin-bottom:6px;">
+            ${propOptions}
+          </select>
+          <input type="text" id="propName-${index}" placeholder="Property Name (auto or custom)" style="margin-bottom:6px;">
+          <input type="number" id="amt-${index}" placeholder="Amount / Base Cost ($)" style="margin-bottom:6px;">
           
           <div class="action-grid">
             <button class="btn-green" onclick="payGo(${index})">Pass GO (+$200)</button>
@@ -377,6 +417,17 @@
       `;
       grid.appendChild(card);
     });
+  }
+
+  function selectProperty(index) {
+    const select = document.getElementById(`propSelect-${index}`);
+    const selectedIdx = select.value;
+    
+    if (selectedIdx !== "") {
+      const prop = boardProperties[selectedIdx];
+      document.getElementById(`propName-${index}`).value = prop.name;
+      document.getElementById(`amt-${index}`).value = prop.cost;
+    }
   }
 
   function addPlayer() {
@@ -454,7 +505,7 @@
     const propName = propInput.value.trim();
     const cost = parseFloat(costInput.value);
 
-    if (!propName || !cost || cost <= 0) return alert("Enter property name and cost!");
+    if (!propName || !cost || cost <= 0) return alert("Select or enter a property name and cost!");
 
     saveState();
     players[index].balance -= cost;
@@ -468,7 +519,7 @@
     const amtInput = document.getElementById(`amt-${index}`);
     const basePrice = parseFloat(amtInput.value);
 
-    if (!basePrice || basePrice <= 0) return alert("Enter property's base standard cost!");
+    if (!basePrice || basePrice <= 0) return alert("Enter or select property's base standard cost!");
 
     const mortgageValue = basePrice / 2;
     const fee = mortgageValue * 0.10;
@@ -482,7 +533,7 @@
 
   function buyBuilding(index, type) {
     const amtInput = document.getElementById(`amt-${index}`);
-    const cost = parseFloat(amtInput.value) || 0; // Uses entered cost (e.g. $50, $100, $150, $200) or $0 if blank
+    const cost = parseFloat(amtInput.value) || 0;
 
     if (type === 'house') {
       if (houses <= 0) return alert("No houses remaining in Bank!");
