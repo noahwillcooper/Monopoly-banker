@@ -64,7 +64,7 @@
 
     /* Left Sidebar: Setup & Log */
     .sidebar {
-      width: 320px;
+      width: 340px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -75,7 +75,7 @@
     .player-grid {
       flex-grow: 1;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: 20px;
     }
 
@@ -124,6 +124,7 @@
       border-radius: 4px;
       margin: 2px;
       font-weight: bold;
+      cursor: pointer;
     }
 
     /* Input & Button Styles */
@@ -132,7 +133,7 @@
       gap: 6px;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 8px;
       font-size: 0.9em;
@@ -173,7 +174,7 @@
     }
 
     .history {
-      max-height: 250px;
+      max-height: 200px;
       overflow-y: auto;
       font-size: 0.8em;
       color: #94a3b8;
@@ -183,6 +184,30 @@
       margin: 4px 0;
       border-bottom: 1px dashed #334155;
       padding-bottom: 2px;
+    }
+
+    /* Rent Reference Table */
+    .rent-table-container {
+      max-height: 250px;
+      overflow-y: auto;
+      font-size: 0.75em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 5px;
+    }
+
+    th, td {
+      border: 1px solid #334155;
+      padding: 4px;
+      text-align: center;
+    }
+
+    th {
+      background: #0f172a;
+      color: #38bdf8;
     }
   </style>
 </head>
@@ -212,231 +237,4 @@
 
     <div class="card" style="display:flex; justify-content:space-around; align-items:center;">
       <div class="vault-display">🏠 Houses: <span id="houses" style="color:#38bdf8">32</span></div>
-      <div class="vault-display">🏨 Hotels: <span id="hotels" style="color:#c084fc">12</span></div>
-    </div>
-  </div>
-
-  <div class="main-content">
-    
-    <div class="sidebar">
-      <div class="card">
-        <h3 style="margin-top:0; font-size:1em;">Add Player</h3>
-        <div class="flex-gap">
-          <input type="text" id="newPlayerName" placeholder="Player Name">
-          <button class="btn-green" onclick="addPlayer()">Add</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-top:0; font-size:1em;">Banker Activity Log</h3>
-        <div class="history" id="log">
-          <p><i>Banker tools online.</i></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="player-grid" id="playerGrid">
-      <div class="card" style="grid-column: 1 / -1; text-align:center; color:#64748b;">
-        <i>No players added yet. Add players from the sidebar on the left.</i>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script>
-  let players = [];
-  let houses = 32;
-  let hotels = 12;
-  let freeParkingPot = 0;
-
-  // Timer Variables
-  let timerInterval = null;
-  let secondsElapsed = 0;
-
-  function toggleTimer() {
-    const btn = document.getElementById("startTimerBtn");
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      btn.textContent = "Start";
-      btn.className = "btn-green";
-    } else {
-      timerInterval = setInterval(() => {
-        secondsElapsed++;
-        updateTimerDisplay();
-      }, 1000);
-      btn.textContent = "Pause";
-      btn.className = "btn-orange";
-    }
-  }
-
-  function resetTimer() {
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = null;
-    secondsElapsed = 0;
-    updateTimerDisplay();
-    document.getElementById("startTimerBtn").textContent = "Start";
-    document.getElementById("startTimerBtn").className = "btn-green";
-  }
-
-  function updateTimerDisplay() {
-    const hrs = String(Math.floor(secondsElapsed / 3600)).padStart(2, '0');
-    const mins = String(Math.floor((secondsElapsed % 3600) / 60)).padStart(2, '0');
-    const secs = String(secondsElapsed % 60).padStart(2, '0');
-    document.getElementById("timer").textContent = `${hrs}:${mins}:${secs}`;
-  }
-
-  function logAction(msg) {
-    const log = document.getElementById("log");
-    const entry = document.createElement("p");
-    entry.textContent = `• ${msg}`;
-    log.prepend(entry);
-  }
-
-  function renderPlayers() {
-    const grid = document.getElementById("playerGrid");
-    grid.innerHTML = "";
-
-    if (players.length === 0) {
-      grid.innerHTML = `
-        <div class="card" style="grid-column: 1 / -1; text-align:center; color:#64748b;">
-          <i>No players added yet. Add players from the sidebar on the left.</i>
-        </div>`;
-      return;
-    }
-
-    players.forEach((p, index) => {
-      const card = document.createElement("div");
-      card.className = "player-card";
-
-      let propsHTML = p.properties.length > 0 
-        ? p.properties.map(pr => `<span class="prop-tag">${pr}</span>`).join(" ") 
-        : "<i>None</i>";
-
-      card.innerHTML = `
-        <div class="player-header">
-          <span class="player-name">${p.name}</span>
-          <span class="player-balance">$${p.balance}</span>
-        </div>
-        
-        <div class="player-props">
-          <strong>Owned Properties:</strong><br>${propsHTML}
-        </div>
-
-        <div style="border-top: 1px solid #334155; padding-top: 8px;">
-          <input type="number" id="amt-${index}" placeholder="Amount / Base Cost ($)" style="margin-bottom:6px;">
-          <input type="text" id="propName-${index}" placeholder="Property Name (for purchase)" style="margin-bottom:6px;">
-          
-          <div class="action-grid">
-            <button class="btn-green" onclick="payGo(${index})">Pass GO (+$200)</button>
-            <button class="btn-red" onclick="chargeBank(${index}, false)">Pay Bank</button>
-            <button class="btn-orange" onclick="chargeBank(${index}, true)">Pay Parking Tax</button>
-            <button class="btn-orange" onclick="claimFreeParking(${index})">Claim Jackpot</button>
-            <button class="btn-blue" onclick="buyProperty(${index})">Buy Property</button>
-            <button class="btn-blue" onclick="unmortgage(${index})">Unmortgage (+10%)</button>
-            <button class="btn-slate" onclick="buyBuilding(${index}, 'house')">Buy House (-1)</button>
-            <button class="btn-purple" onclick="buyBuilding(${index}, 'hotel')">Buy Hotel (-1)</button>
-          </div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-  }
-
-  function addPlayer() {
-    const input = document.getElementById("newPlayerName");
-    const name = input.value.trim();
-    if (!name) return alert("Enter a valid player name!");
-
-    players.push({ name: name, balance: 1500, properties: [] });
-    input.value = "";
-    logAction(`Added player "${name}" with starting balance of $1,500.`);
-    renderPlayers();
-  }
-
-  function payGo(index) {
-    players[index].balance += 200;
-    logAction(`Bank paid $200 GO salary to ${players[index].name}.`);
-    renderPlayers();
-  }
-
-  function chargeBank(index, toFreeParking) {
-    const amtInput = document.getElementById(`amt-${index}`);
-    const val = parseFloat(amtInput.value);
-
-    if (!val || val <= 0) return alert("Please enter a valid dollar amount!");
-
-    players[index].balance -= val;
-
-    if (toFreeParking) {
-      freeParkingPot += val;
-      document.getElementById("parkingPot").textContent = `$${freeParkingPot}`;
-      logAction(`${players[index].name} paid $${val} tax to Free Parking.`);
-    } else {
-      logAction(`${players[index].name} paid $${val} to the Bank.`);
-    }
-
-    renderPlayers();
-  }
-
-  function claimFreeParking(index) {
-    if (freeParkingPot === 0) return alert("Free Parking Jackpot is empty!");
-
-    players[index].balance += freeParkingPot;
-    logAction(`${players[index].name} claimed the Free Parking Jackpot of $${freeParkingPot}!`);
-    freeParkingPot = 0;
-    document.getElementById("parkingPot").textContent = "$0";
-    renderPlayers();
-  }
-
-  function buyProperty(index) {
-    const propInput = document.getElementById(`propName-${index}`);
-    const costInput = document.getElementById(`amt-${index}`);
-
-    const propName = propInput.value.trim();
-    const cost = parseFloat(costInput.value);
-
-    if (!propName || !cost || cost <= 0) return alert("Enter property name and cost!");
-
-    players[index].balance -= cost;
-    players[index].properties.push(propName);
-
-    logAction(`${players[index].name} bought ${propName} for $${cost}.`);
-    renderPlayers();
-  }
-
-  function unmortgage(index) {
-    const amtInput = document.getElementById(`amt-${index}`);
-    const basePrice = parseFloat(amtInput.value);
-
-    if (!basePrice || basePrice <= 0) return alert("Enter property's base standard cost!");
-
-    const mortgageValue = basePrice / 2;
-    const fee = mortgageValue * 0.10;
-    const totalToPay = mortgageValue + fee;
-
-    players[index].balance -= totalToPay;
-    logAction(`${players[index].name} unmortgaged property ($${basePrice} base): Paid $${totalToPay} ($${mortgageValue} + $${fee} fee).`);
-    renderPlayers();
-  }
-
-  function buyBuilding(index, type) {
-    if (type === 'house') {
-      if (houses <= 0) return alert("No houses remaining in Bank!");
-      houses--;
-      document.getElementById("houses").textContent = houses;
-      logAction(`${players[index].name} bought a house. Houses left: ${houses}`);
-    } else if (type === 'hotel') {
-      if (hotels <= 0) return alert("No hotels remaining in Bank!");
-      hotels--;
-      houses += 4;
-      document.getElementById("houses").textContent = houses;
-      document.getElementById("hotels").textContent = hotels;
-      logAction(`${players[index].name} bought a hotel (+4 houses returned to Bank). Hotels left: ${hotels}`);
-    }
-  }
-</script>
-
-</body>
-</html>
+      <div class="vault-display">🏨 Hotels: <span id="
