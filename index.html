@@ -228,6 +228,11 @@
       </div>
 
       <div class="card">
+        <h3 style="margin-top:0; font-size:1em;">Determine Starter</h3>
+        <button class="btn-purple" style="width: 100%; font-size: 0.9em;" onclick="pickRandomStarter()">🎲 Roll First Player</button>
+      </div>
+
+      <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <h3 style="margin:0; font-size:1em;">Activity Log</h3>
           <button class="btn-orange" onclick="undoLastAction()">↩️ Undo Last</button>
@@ -366,6 +371,18 @@
     log.prepend(entry);
   }
 
+  function pickRandomStarter() {
+    if (players.length === 0) {
+      return alert("Please add at least one player before rolling for a starter!");
+    }
+
+    const randomIndex = Math.floor(Math.random() * players.length);
+    const startingPlayer = players[randomIndex].name;
+
+    logAction(`🎲 ${startingPlayer} was randomly selected to start the game!`);
+    alert(`🎉 ${startingPlayer} goes first!`);
+  }
+
   function renderPlayers() {
     const grid = document.getElementById("playerGrid");
     grid.innerHTML = "";
@@ -391,7 +408,6 @@
         propOptions += `<option value="${pIdx}">${prop.name} ($${prop.cost})</option>`;
       });
 
-      // Recipient options for Rent transfers
       let recipientOptions = `<option value="">-- Pay Rent To Player --</option>`;
       players.forEach((otherP, oIdx) => {
         if (oIdx !== index) {
