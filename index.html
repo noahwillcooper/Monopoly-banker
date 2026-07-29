@@ -256,43 +256,41 @@
 
   // Full Standard Board Property List with Colors
   const boardProperties = [
-    { name: "Mediterranean Avenue", cost: 60, bg: "#78350f", color: "#ffffff" }, // Brown
-    { name: "Baltic Avenue", cost: 60, bg: "#78350f", color: "#ffffff" },       // Brown
-    { name: "Reading Railroad", cost: 200, bg: "#334155", color: "#ffffff" },    // Railroad
-    { name: "Oriental Avenue", cost: 100, bg: "#38bdf8", color: "#0f172a" },    // Light Blue
-    { name: "Vermont Avenue", cost: 100, bg: "#38bdf8", color: "#0f172a" },     // Light Blue
-    { name: "Connecticut Avenue", cost: 120, bg: "#38bdf8", color: "#0f172a" }, // Light Blue
-    { name: "St. Charles Place", cost: 140, bg: "#c084fc", color: "#ffffff" },  // Pink/Magenta
-    { name: "Electric Company", cost: 150, bg: "#64748b", color: "#ffffff" },   // Utility
-    { name: "States Avenue", cost: 140, bg: "#c084fc", color: "#ffffff" },     // Pink/Magenta
-    { name: "Virginia Avenue", cost: 160, bg: "#c084fc", color: "#ffffff" },   // Pink/Magenta
+    { name: "Mediterranean Avenue", cost: 60, bg: "#78350f", color: "#ffffff" },
+    { name: "Baltic Avenue", cost: 60, bg: "#78350f", color: "#ffffff" },
+    { name: "Reading Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
+    { name: "Oriental Avenue", cost: 100, bg: "#38bdf8", color: "#0f172a" },
+    { name: "Vermont Avenue", cost: 100, bg: "#38bdf8", color: "#0f172a" },
+    { name: "Connecticut Avenue", cost: 120, bg: "#38bdf8", color: "#0f172a" },
+    { name: "St. Charles Place", cost: 140, bg: "#c084fc", color: "#ffffff" },
+    { name: "Electric Company", cost: 150, bg: "#64748b", color: "#ffffff" },
+    { name: "States Avenue", cost: 140, bg: "#c084fc", color: "#ffffff" },
+    { name: "Virginia Avenue", cost: 160, bg: "#c084fc", color: "#ffffff" },
     { name: "Pennsylvania Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
-    { name: "St. James Place", cost: 180, bg: "#ea580c", color: "#ffffff" },   // Orange
-    { name: "Tennessee Avenue", cost: 180, bg: "#ea580c", color: "#ffffff" },  // Orange
-    { name: "New York Avenue", cost: 200, bg: "#ea580c", color: "#ffffff" },   // Orange
-    { name: "Kentucky Avenue", cost: 220, bg: "#dc2626", color: "#ffffff" },   // Red
-    { name: "Indiana Avenue", cost: 220, bg: "#dc2626", color: "#ffffff" },    // Red
-    { name: "Illinois Avenue", cost: 240, bg: "#dc2626", color: "#ffffff" },   // Red
+    { name: "St. James Place", cost: 180, bg: "#ea580c", color: "#ffffff" },
+    { name: "Tennessee Avenue", cost: 180, bg: "#ea580c", color: "#ffffff" },
+    { name: "New York Avenue", cost: 200, bg: "#ea580c", color: "#ffffff" },
+    { name: "Kentucky Avenue", cost: 220, bg: "#dc2626", color: "#ffffff" },
+    { name: "Indiana Avenue", cost: 220, bg: "#dc2626", color: "#ffffff" },
+    { name: "Illinois Avenue", cost: 240, bg: "#dc2626", color: "#ffffff" },
     { name: "B. & O. Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
-    { name: "Atlantic Avenue", cost: 260, bg: "#facc15", color: "#0f172a" },   // Yellow
-    { name: "Ventnor Avenue", cost: 260, bg: "#facc15", color: "#0f172a" },    // Yellow
-    { name: "Water Works", cost: 150, bg: "#64748b", color: "#ffffff" },       // Utility
-    { name: "Marvin Gardens", cost: 280, bg: "#facc15", color: "#0f172a" },    // Yellow
-    { name: "Pacific Avenue", cost: 300, bg: "#16a34a", color: "#ffffff" },    // Green
+    { name: "Atlantic Avenue", cost: 260, bg: "#facc15", color: "#0f172a" },
+    { name: "Ventnor Avenue", cost: 260, bg: "#facc15", color: "#0f172a" },
+    { name: "Water Works", cost: 150, bg: "#64748b", color: "#ffffff" },
+    { name: "Marvin Gardens", cost: 280, bg: "#facc15", color: "#0f172a" },
+    { name: "Pacific Avenue", cost: 300, bg: "#16a34a", color: "#ffffff" },
     { name: "North Carolina Avenue", cost: 300, bg: "#16a34a", color: "#ffffff" },
     { name: "Pennsylvania Avenue", cost: 320, bg: "#16a34a", color: "#ffffff" },
     { name: "Short Line Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
-    { name: "Park Place", cost: 350, bg: "#1e40af", color: "#ffffff" },        // Dark Blue
-    { name: "Boardwalk", cost: 400, bg: "#1e40af", color: "#ffffff" }          // Dark Blue
+    { name: "Park Place", cost: 350, bg: "#1e40af", color: "#ffffff" },
+    { name: "Boardwalk", cost: 400, bg: "#1e40af", color: "#ffffff" }
   ];
 
-  // Helper to retrieve color attributes for a property name
   function getPropStyle(propName) {
     const found = boardProperties.find(p => p.name.toLowerCase() === propName.toLowerCase());
     if (found) {
       return `background-color: ${found.bg}; color: ${found.color};`;
     }
-    // Default fallback style for custom property names
     return `background-color: #475569; color: #ffffff;`;
   }
 
@@ -393,6 +391,14 @@
         propOptions += `<option value="${pIdx}">${prop.name} ($${prop.cost})</option>`;
       });
 
+      // Recipient options for Rent transfers
+      let recipientOptions = `<option value="">-- Pay Rent To Player --</option>`;
+      players.forEach((otherP, oIdx) => {
+        if (oIdx !== index) {
+          recipientOptions += `<option value="${oIdx}">${otherP.name}</option>`;
+        }
+      });
+
       card.innerHTML = `
         <div class="player-header">
           <span class="player-name">${p.name}</span>
@@ -408,9 +414,14 @@
             ${propOptions}
           </select>
           <input type="text" id="propName-${index}" placeholder="Property Name (auto or custom)" style="margin-bottom:6px;">
-          <input type="number" id="amt-${index}" placeholder="Amount / Base Cost ($)" style="margin-bottom:6px;">
+          <input type="number" id="amt-${index}" placeholder="Custom Amount / Rent / Fee ($)" style="margin-bottom:6px;">
           
+          <select id="rentRecipient-${index}" style="margin-bottom:6px;">
+            ${recipientOptions}
+          </select>
+
           <div class="action-grid">
+            <button class="btn-green" onclick="payRent(${index})">Pay Rent to Player</button>
             <button class="btn-green" onclick="payGo(${index})">Pass GO (+$200)</button>
             <button class="btn-red" onclick="payIncomeTax(${index})">Income Tax ($200/10%)</button>
             <button class="btn-red" onclick="payLuxuryTax(${index})">Luxury Tax ($75)</button>
@@ -437,6 +448,23 @@
       document.getElementById(`propName-${index}`).value = prop.name;
       document.getElementById(`amt-${index}`).value = prop.cost;
     }
+  }
+
+  function payRent(index) {
+    const recipientSelect = document.getElementById(`rentRecipient-${index}`);
+    const targetIdx = recipientSelect.value;
+    const amtInput = document.getElementById(`amt-${index}`);
+    const amount = parseFloat(amtInput.value);
+
+    if (targetIdx === "") return alert("Please select a player to pay rent to!");
+    if (!amount || amount <= 0) return alert("Please enter a valid rent amount!");
+
+    saveState();
+    players[index].balance -= amount;
+    players[targetIdx].balance += amount;
+
+    logAction(`${players[index].name} paid $${amount} rent to ${players[targetIdx].name}.`);
+    renderPlayers();
   }
 
   function addPlayer() {
