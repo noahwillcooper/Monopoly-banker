@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monopoly Banker Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 400px;
+      width: 100%;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #1e293b;
+      margin-top: 0;
+    }
+    .stats-card {
+      display: flex;
+      justify-content: space-between;
+      background: #e2e8f0;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+      color: #475569;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.1em;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 12px;
+      font-size: 0.95em;
+      font-weight: bold;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-green { background-color: #16a34a; }
+    .btn-blue  { background-color: #2563eb; }
+    .btn-orange{ background-color: #ea580c; }
+    .btn-purple{ background-color: #9333ea; }
+    
+    .history {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .history p {
+      margin: 4px 0;
+      font-size: 0.85em;
+      color: #334155;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🏦 Banker Assistant</h1>
+
+  <div class="stats-card">
+    <span>🏠 Houses Left: <span id="houses">32</span></span>
+    <span>🏨 Hotels Left: <span id="hotels">12</span></span>
+  </div>
+
+  <div class="input-group">
+    <label for="amount">Custom Amount / Base Price ($)</label>
+    <input type="number" id="amount" placeholder="e.g., 200 or 400">
+  </div>
+
+  <div class="grid">
+    <button class="btn-green" onclick="payGo()">Pay Pass GO ($200)</button>
+    <button class="btn-blue" onclick="unmortgage()">Unmortgage (+10% Fee)</button>
+    <button class="btn-orange" onclick="updateInventory('houses', -1)">Buy House (-1)</button>
+    <button class="btn-purple" onclick="updateInventory('hotels', -1)">Buy Hotel (-1)</button>
+  </div>
+
+  <h3>Recent Banker Activity</h3>
+  <div class="history" id="log">
+    <p><i>Bank opened. Ready for play!</i></p>
+  </div>
+</div>
+
+<script>
+  let houses = 32;
+  let hotels = 12;
+
+  function logAction(msg) {
+    const log = document.getElementById("log");
+    const entry = document.createElement("p");
+    entry.textContent = `• ${msg}`;
+    log.prepend(entry);
+  }
+
+  function payGo() {
+    logAction("Bank paid $200 for Pass GO.");
+  }
+
+  function unmortgage() {
+    const input = document.getElementById("amount");
+    const basePrice = parseFloat(input.value);
+    
+    if (!basePrice || basePrice <= 0) {
+      alert("Please enter the property's original base price standard cost!");
+      return;
+    }
+
+    const mortgageValue = basePrice / 2;
+    const fee = mortgageValue * 0.10;
+    const totalToPayBank = mortgageValue + fee;
+
+    logAction(`Lift Mortgage ($${basePrice} base): Player pays Bank $${totalToPayBank} ($${mortgageValue} principal + $${fee} interest).`);
+    input.value = "";
+  }
+
+  function updateInventory(type, change) {
+    if (type === 'houses') {
+      if (houses + change < 0) return alert("No houses remaining in Bank!");
+      houses += change;
+      document.getElementById('houses').textContent = houses;
+      logAction(`House inventory updated. Total left: ${houses}`);
+    } else if (type === 'hotels') {
+      if (hotels + change < 0) return alert("No hotels remaining in Bank!");
+      hotels += change;
+      document.getElementById('hotels').textContent = hotels;
+      logAction(`Hotel inventory updated. Total left: ${hotels}`);
+    }
+  }
+</script>
+
+</body>
+</html>
