@@ -113,17 +113,17 @@
     .player-props {
       font-size: 0.85em;
       color: #94a3b8;
-      min-height: 40px;
+      min-height: 45px;
     }
 
     .prop-tag {
       display: inline-block;
-      background: #334155;
-      color: #f8fafc;
       padding: 3px 8px;
       border-radius: 4px;
       margin: 2px;
       font-weight: bold;
+      font-size: 0.85em;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
 
     /* Input & Button Styles */
@@ -254,37 +254,47 @@
   let freeParkingPot = 0;
   let historyStack = [];
 
-  // Full Standard Board Property List with Prices
+  // Full Standard Board Property List with Colors
   const boardProperties = [
-    { name: "Mediterranean Avenue", cost: 60 },
-    { name: "Baltic Avenue", cost: 60 },
-    { name: "Reading Railroad", cost: 200 },
-    { name: "Oriental Avenue", cost: 100 },
-    { name: "Vermont Avenue", cost: 100 },
-    { name: "Connecticut Avenue", cost: 120 },
-    { name: "St. Charles Place", cost: 140 },
-    { name: "Electric Company", cost: 150 },
-    { name: "States Avenue", cost: 140 },
-    { name: "Virginia Avenue", cost: 160 },
-    { name: "Pennsylvania Railroad", cost: 200 },
-    { name: "St. James Place", cost: 180 },
-    { name: "Tennessee Avenue", cost: 180 },
-    { name: "New York Avenue", cost: 200 },
-    { name: "Kentucky Avenue", cost: 220 },
-    { name: "Indiana Avenue", cost: 220 },
-    { name: "Illinois Avenue", cost: 240 },
-    { name: "B. & O. Railroad", cost: 200 },
-    { name: "Atlantic Avenue", cost: 260 },
-    { name: "Ventnor Avenue", cost: 260 },
-    { name: "Water Works", cost: 150 },
-    { name: "Marvin Gardens", cost: 280 },
-    { name: "Pacific Avenue", cost: 300 },
-    { name: "North Carolina Avenue", cost: 300 },
-    { name: "Pennsylvania Avenue", cost: 320 },
-    { name: "Short Line Railroad", cost: 200 },
-    { name: "Park Place", cost: 350 },
-    { name: "Boardwalk", cost: 400 }
+    { name: "Mediterranean Avenue", cost: 60, bg: "#78350f", color: "#ffffff" }, // Brown
+    { name: "Baltic Avenue", cost: 60, bg: "#78350f", color: "#ffffff" },       // Brown
+    { name: "Reading Railroad", cost: 200, bg: "#334155", color: "#ffffff" },    // Railroad
+    { name: "Oriental Avenue", cost: 100, bg: "#38bdf8", color: "#0f172a" },    // Light Blue
+    { name: "Vermont Avenue", cost: 100, bg: "#38bdf8", color: "#0f172a" },     // Light Blue
+    { name: "Connecticut Avenue", cost: 120, bg: "#38bdf8", color: "#0f172a" }, // Light Blue
+    { name: "St. Charles Place", cost: 140, bg: "#c084fc", color: "#ffffff" },  // Pink/Magenta
+    { name: "Electric Company", cost: 150, bg: "#64748b", color: "#ffffff" },   // Utility
+    { name: "States Avenue", cost: 140, bg: "#c084fc", color: "#ffffff" },     // Pink/Magenta
+    { name: "Virginia Avenue", cost: 160, bg: "#c084fc", color: "#ffffff" },   // Pink/Magenta
+    { name: "Pennsylvania Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
+    { name: "St. James Place", cost: 180, bg: "#ea580c", color: "#ffffff" },   // Orange
+    { name: "Tennessee Avenue", cost: 180, bg: "#ea580c", color: "#ffffff" },  // Orange
+    { name: "New York Avenue", cost: 200, bg: "#ea580c", color: "#ffffff" },   // Orange
+    { name: "Kentucky Avenue", cost: 220, bg: "#dc2626", color: "#ffffff" },   // Red
+    { name: "Indiana Avenue", cost: 220, bg: "#dc2626", color: "#ffffff" },    // Red
+    { name: "Illinois Avenue", cost: 240, bg: "#dc2626", color: "#ffffff" },   // Red
+    { name: "B. & O. Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
+    { name: "Atlantic Avenue", cost: 260, bg: "#facc15", color: "#0f172a" },   // Yellow
+    { name: "Ventnor Avenue", cost: 260, bg: "#facc15", color: "#0f172a" },    // Yellow
+    { name: "Water Works", cost: 150, bg: "#64748b", color: "#ffffff" },       // Utility
+    { name: "Marvin Gardens", cost: 280, bg: "#facc15", color: "#0f172a" },    // Yellow
+    { name: "Pacific Avenue", cost: 300, bg: "#16a34a", color: "#ffffff" },    // Green
+    { name: "North Carolina Avenue", cost: 300, bg: "#16a34a", color: "#ffffff" },
+    { name: "Pennsylvania Avenue", cost: 320, bg: "#16a34a", color: "#ffffff" },
+    { name: "Short Line Railroad", cost: 200, bg: "#334155", color: "#ffffff" },
+    { name: "Park Place", cost: 350, bg: "#1e40af", color: "#ffffff" },        // Dark Blue
+    { name: "Boardwalk", cost: 400, bg: "#1e40af", color: "#ffffff" }          // Dark Blue
   ];
+
+  // Helper to retrieve color attributes for a property name
+  function getPropStyle(propName) {
+    const found = boardProperties.find(p => p.name.toLowerCase() === propName.toLowerCase());
+    if (found) {
+      return `background-color: ${found.bg}; color: ${found.color};`;
+    }
+    // Default fallback style for custom property names
+    return `background-color: #475569; color: #ffffff;`;
+  }
 
   // Timer Variables
   let timerInterval = null;
@@ -375,10 +385,9 @@
       card.className = "player-card";
 
       let propsHTML = p.properties.length > 0 
-        ? p.properties.map(pr => `<span class="prop-tag">${pr}</span>`).join(" ") 
+        ? p.properties.map(pr => `<span class="prop-tag" style="${getPropStyle(pr)}">${pr}</span>`).join(" ") 
         : "<i>None</i>";
 
-      // Generate property dropdown options
       let propOptions = `<option value="">-- Choose Board Property --</option>`;
       boardProperties.forEach((prop, pIdx) => {
         propOptions += `<option value="${pIdx}">${prop.name} ($${prop.cost})</option>`;
