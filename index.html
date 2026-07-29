@@ -228,7 +228,10 @@
       </div>
 
       <div class="card">
-        <h3 style="margin-top:0; font-size:1em;">Banker Activity Log</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h3 style="margin:0; font-size:1em;">Activity Log</h3>
+          <button class="btn-orange" onclick="undoLastAction()">↩️ Undo Last</button>
+        </div>
         <div class="history" id="log">
           <p><i>Banker tools online.</i></p>
         </div>
@@ -249,6 +252,7 @@
   let houses = 32;
   let hotels = 12;
   let freeParkingPot = 0;
+  let historyStack = []; // Stores states for Undo
 
   // Timer Variables
   let timerInterval = null;
@@ -285,6 +289,35 @@
     const mins = String(Math.floor((secondsElapsed % 3600) / 60)).padStart(2, '0');
     const secs = String(secondsElapsed % 60).padStart(2, '0');
     document.getElementById("timer").textContent = `${hrs}:${mins}:${secs}`;
+  }
+
+  // Save state before performing an action
+  function saveState() {
+    historyStack.push({
+      players: JSON.parse(JSON.stringify(players)),
+      houses: houses,
+      hotels: hotels,
+      freeParkingPot: freeParkingPot
+    });
+  }
+
+  function undoLastAction() {
+    if (historyStack.length === 0) {
+      return alert("No previous actions to undo!");
+    }
+
+    let previousState = historyStack.pop();
+    players = previousState.players;
+    houses = previousState.houses;
+    hotels = previousState.hotels;
+    freeParkingPot = previousState.freeParkingPot;
+
+    document.getElementById("houses").textContent = houses;
+    document.getElementById("hotels").textContent = hotels;
+    document.getElementById("parkingPot").textContent = `$${freeParkingPot}`;
+
+    logAction("↩️ Last action was undone.");
+    renderPlayers();
   }
 
   function logAction(msg) {
@@ -351,6 +384,7 @@
     const name = input.value.trim();
     if (!name) return alert("Enter a valid player name!");
 
+    saveState();
     players.push({ name: name, balance: 1500, properties: [] });
     input.value = "";
     logAction(`Added player "${name}" with starting balance of $1,500.`);
@@ -358,6 +392,7 @@
   }
 
   function payGo(index) {
+    saveState();
     players[index].balance += 200;
     logAction(`Bank paid $200 GO salary to ${players[index].name}.`);
     renderPlayers();
@@ -365,17 +400,17 @@
 
   function payIncomeTax(index) {
     let player = players[index];
-    // Calculate 10% of cash balance
     let tenPercent = Math.max(0, Math.round(player.balance * 0.10));
-    // Rule: Pay $200 or 10%, whichever is less
     let taxAmount = Math.min(200, tenPercent);
 
+    saveState();
     player.balance -= taxAmount;
     logAction(`${player.name} paid $${taxAmount} Income Tax to the Bank (Lower of $200 or 10%).`);
     renderPlayers();
   }
 
   function payLuxuryTax(index) {
+    saveState();
     players[index].balance -= 75;
     logAction(`${players[index].name} paid $75 Luxury Tax to the Bank.`);
     renderPlayers();
@@ -387,6 +422,7 @@
 
     if (!val || val <= 0) return alert("Please enter a valid dollar amount!");
 
+    saveState();
     players[index].balance -= val;
 
     if (toFreeParking) {
@@ -403,6 +439,7 @@
   function claimFreeParking(index) {
     if (freeParkingPot === 0) return alert("Free Parking Jackpot is empty!");
 
+    saveState();
     players[index].balance += freeParkingPot;
     logAction(`${players[index].name} claimed the Free Parking Jackpot of $${freeParkingPot}!`);
     freeParkingPot = 0;
@@ -419,6 +456,7 @@
 
     if (!propName || !cost || cost <= 0) return alert("Enter property name and cost!");
 
+    saveState();
     players[index].balance -= cost;
     players[index].properties.push(propName);
 
@@ -436,6 +474,7 @@
     const fee = mortgageValue * 0.10;
     const totalToPay = mortgageValue + fee;
 
+    saveState();
     players[index].balance -= totalToPay;
     logAction(`${players[index].name} unmortgaged property ($${basePrice} base): Paid $${totalToPay} ($${mortgageValue} + $${fee} fee).`);
     renderPlayers();
@@ -444,11 +483,13 @@
   function buyBuilding(index, type) {
     if (type === 'house') {
       if (houses <= 0) return alert("No houses remaining in Bank!");
+      saveState();
       houses--;
       document.getElementById("houses").textContent = houses;
       logAction(`${players[index].name} bought a house. Houses left: ${houses}`);
     } else if (type === 'hotel') {
       if (hotels <= 0) return alert("No hotels remaining in Bank!");
+      saveState();
       hotels--;
       houses += 4;
       document.getElementById("houses").textContent = houses;
